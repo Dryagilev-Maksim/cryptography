@@ -1,0 +1,1586 @@
+
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Криптографические способы шифрования информации</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 1000px;
+            line-height: 1.6;
+            transition: margin-right 0.3s ease;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        select, input {
+            margin-bottom: 10px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #sidebar {
+            width: 300px;
+            position: fixed;
+            top: 0;
+            right: -320px;
+            height: 100%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+
+        #sidebar.active {
+            right: 0;
+        }
+
+        #description {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        #resultText {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            min-height: 50px;
+            border: 1px solid #ddd;
+            word-break: break-word;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 15px;
+        }
+
+        .checkbox-group {
+            margin-left: 20px;
+        }
+
+        .checkbox-group label {
+            font-weight: normal;
+        }
+
+        /* Кнопка управления боковой панелью */
+        #sidebarToggle {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background-color: #2196F3;
+            z-index: 1001;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Стили для мобильных устройств */
+        @media (max-width: 768px) {
+            body {
+                margin-right: 0;
+            }
+            
+            #sidebar {
+                width: 80%;
+                right: -85%;
+            }
+            
+            #sidebar.active {
+                right: 0;
+            }
+        }
+
+        /* Анимация кнопки */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        button:active {
+            animation: pulse 0.3s;
+        }
+
+        /* Стили для многострочного select */
+        select[multiple] {
+            height: auto;
+            min-height: 100px;
+        }
+
+        /* Стили для brute force атаки */
+        .brute-force-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #progress {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9e9e9;
+            border-radius: 4px;
+            display: none;
+        }
+
+        #bruteForceResult {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #dff0d8;
+            border-radius: 4px;
+            display: none;
+        }
+
+        #currentAttempt {
+            font-weight: bold;
+            color: #31708f;
+            word-break: break-all;
+        }
+
+        .stats {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .process-btn {
+            background-color: #4CAF50;
+        }
+
+        .copy-btn {
+            background-color: #2196F3;
+        }
+
+        .clear-btn {
+            background-color: #f44336;
+        }
+
+        .start-btn {
+            background-color: #4CAF50;
+        }
+
+        .stop-btn {
+            background-color: #f44336;
+        }
+
+        button:disabled {
+            background-color: #cccccc !important;
+            cursor: not-allowed;
+        }
+
+        .history-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .history-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .history-item small {
+            color: #666;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            background-color: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+       </style>
+</head>
+<body>
+    
+    <button id="sidebarToggle" title="Показать/скрыть описание">?</button>
+    
+    <div id="sidebar">
+        <h3>Описание</h3>
+        <div id="description">Выберите шифр или функцию для отображения описания.</div>
+        
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="description-tab">Описание функции/шифра</button>
+            <button class="tab-button" data-tab="history-tab">История запросов</button>
+        </div>
+        
+        <div id="description-tab" class="tab-content active">
+            <div id="description-content"></div>
+        </div>
+        
+        <div id="history-tab" class="tab-content">
+            <h3>История операций</h3>
+            <div id="history"></div>
+            <button id="clearHistory" class="clear-btn" style="margin-top: 10px;">Очистить историю</button><br><br>
+        </div>
+    </div>
+    
+    <h1>Криптографические способы шифрования информации</h1>
+   
+    <div id="inputTextContainer">
+        <label for="inputText">Исходный текст:</label>
+        <textarea id="inputText" placeholder="Введите текст..."></textarea><br>
+    </div>
+   
+    <label for="cipherType">Выберите функцию:</label>
+    <select id="cipherType">
+        <option value="caesar">Шифр Цезаря</option>
+        <option value="vigenere">Шифр Виженера</option>
+        <option value="morse">Код Морзе</option>
+        <option value="base64">Base64 кодирование</option>
+        <option value="hash">Хэш-функция SHA-256</option>
+        <option value="password">Создание и проверка пароля</option>
+    </select><br>
+   
+    <div id="caesarOptions" class="options-container" style="display: none;">
+        <label for="shift">Сдвиг:</label>
+        <input type="number" id="shift" value="3" min="1" max="100"><br>
+    </div>
+   
+    <div id="vigenereOptions" class="options-container" style="display: none;">
+        <label for="key">Ключ:</label>
+        <input type="text" id="key" placeholder="Введите ключ..."><br>
+    </div>
+
+    <div id="passwordOptions" class="options-container" style="display: none;">
+        <label for="length">Длина пароля:</label>
+        <input type="number" id="length" value="12" min="6" max="50"><br>
+
+        <label for="language">Выберите язык символов (удерживайте Ctrl для выбора нескольких):</label>
+        <select id="language" multiple>
+            <option value="english" selected>Английские символы</option>
+            <option value="russian" selected>Русские символы</option>
+        </select><br>
+
+        <label>Выберите содержимое пароля:</label>
+        <div class="checkbox-group">
+            <input type="checkbox" id="includeLetters" checked> Буквы (A-Z, а-я)<br>
+            <input type="checkbox" id="includeNumbers" checked> Цифры (0-9)<br>
+            <input type="checkbox" id="includeSpecialChars" checked> Специальные символы (!@#$%^&*)<br>
+        </div>
+    </div>
+
+    <div id="bruteforceOptions" class="options-container" style="display: none;">
+        <div class="form-group">
+            <label for="targetHash">Целевой хэш:</label>
+            <input type="text" id="targetHash" placeholder="Введите SHA-256 хэш">
+        </div>
+        
+        <div class="form-group">
+            <label for="maxLength">Максимальная длина пароля:</label>
+            <input type="number" id="maxLength" min="1" max="8" value="4">
+        </div>
+        
+        <div class="form-group">
+            <label for="charsetType">Набор символов:</label>
+            <select id="charsetType">
+                <option value="en">Английский алфавит (a-z, A-Z, 0-9)</option>
+                <option value="ru">Русский алфавит (а-я, А-Я, 0-9)</option>
+                <option value="en+ru" selected>Английский + Русский</option>
+                <option value="all">Все символы + специальные</option>
+            </select>
+        </div>
+    </div>
+ 
+    <div id="modeContainer">
+        <label for="mode">Выберите режим:</label>
+        <select id="mode">
+            <option value="true">Шифрование/Кодирование</option>
+            <option value="false">Дешифрование/Декодирование</option>
+        </select><br>
+    </div>
+   
+    <button id="processButton" class="process-btn">Обработать</button>
+    <button id="copyButton" class="copy-btn" style="display: none;">Копировать результат</button>
+    <button id="clearButton" class="clear-btn">Очистить</button>
+    <button id="startBtn" class="start-btn" style="display: none;">Начать атаку</button>
+    <button id="stopBtn" class="stop-btn" style="display: none;" disabled>Остановить</button>
+   
+    <h2>Результат:</h2>
+    <div id="resultText"></div>
+
+    <div id="progress" style="display: none;">
+        <h3>Прогресс:</h3>
+        <div>Текущая попытка: <span id="currentAttempt"></span></div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+        <div class="stats">Количество попыток: <span id="attemptsCount">0</span></div>
+        <div class="stats">Затраченное время: <span id="timeElapsed">0</span> сек</div>
+        <div class="stats">Скорость: <span id="speed">0</span> хэшей/сек</div>
+    </div>
+    
+    <div id="bruteForceResult" style="display: none;"></div>
+
+    <script>
+        // Массив для хранения истории операций
+        let operationHistory = JSON.parse(localStorage.getItem('cryptoHistory')) || [];
+        
+        // Функция для добавления операции в историю
+        function addToHistory(operation) {
+            operationHistory.unshift({
+                ...operation,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (operationHistory.length > 15) {
+                operationHistory = operationHistory.slice(0, 15);
+            }
+            
+            localStorage.setItem('cryptoHistory', JSON.stringify(operationHistory));
+            updateHistoryDisplay();
+        }
+        
+        // Функция для обновления отображения истории
+        function updateHistoryDisplay() {
+            const historyElement = document.getElementById('history');
+            historyElement.innerHTML = '';
+            
+            if (operationHistory.length === 0) {
+                historyElement.innerHTML = '<p>История операций пуста</p>';
+                return;
+            }
+            
+            operationHistory.forEach((op, index) => {
+                const opElement = document.createElement('div');
+                opElement.className = 'history-item';
+                
+                const date = new Date(op.timestamp);
+                const timeString = date.toLocaleTimeString();
+                const dateString = date.toLocaleDateString();
+                
+                opElement.innerHTML = `
+                    <strong>${op.type}</strong> (${op.mode})<br>
+                    <small>${op.input.substring(0, 20)}${op.input.length > 20 ? '...' : ''}</small><br>
+                    <small>${dateString} ${timeString}</small>
+                `;
+                
+                opElement.addEventListener('click', () => {
+                    document.getElementById('inputText').value = op.input;
+                    document.getElementById('cipherType').value = op.type;
+                    document.getElementById('mode').value = op.mode === 'Шифрование' || op.mode === 'Хэширование' || op.mode === 'Генерация' || op.mode === 'Кодирование' ? 'true' : 'false';
+                    
+                    // Обновляем отображение опций
+                    document.getElementById('cipherType').dispatchEvent(new Event('change'));
+                    
+                    // Устанавливаем дополнительные параметры если они есть
+                    if (op.type === 'caesar' && op.shift) {
+                        document.getElementById('shift').value = op.shift;
+                    }
+                    if (op.type === 'vigenere' && op.key) {
+                        document.getElementById('key').value = op.key;
+                    }
+                    if (op.type === 'password' && op.length) {
+                        document.getElementById('length').value = op.length;
+                    }
+                });
+                
+                historyElement.appendChild(opElement);
+            });
+        }
+
+        // Функция для управления боковой панелью
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+            
+            const toggleButton = document.getElementById('sidebarToggle');
+            if (sidebar.classList.contains('active')) {
+                toggleButton.textContent = '?';
+                toggleButton.style.right = '320px';
+            } else {
+                toggleButton.textContent = '?';
+                toggleButton.style.right = '20px';
+            }
+        }
+
+        // Функция для шифра Цезаря
+        function caesarCipher(text, shift, mode) {
+            const russianAlphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+            const englishAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+            const shiftChar = (char, alphabet, shift) => {
+                const index = alphabet.indexOf(char);
+                if (index === -1) return char;
+                const newIndex = (index + shift + alphabet.length) % alphabet.length;
+                return alphabet[newIndex];
+            };
+
+            const actualShift = mode ? shift : -shift;
+
+            let resultText = '';
+            for (let char of text) {
+                if (russianAlphabet.includes(char)) {
+                    resultText += shiftChar(char, russianAlphabet, actualShift);
+                } else if (englishAlphabet.includes(char)) {
+                    resultText += shiftChar(char, englishAlphabet, actualShift);
+                } else {
+                    resultText += char;
+                }
+            }
+
+            return resultText;
+        }
+
+        // Функция для шифра Виженера
+        function vigenereCipher(text, key, mode) {
+            const russianAlphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+            const englishAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+            const getCharIndex = (char, alphabet) => alphabet.indexOf(char);
+
+            let resultText = '';
+            let keyIndex = 0;
+
+            for (let char of text) {
+                const isRussian = russianAlphabet.includes(char);
+                const isEnglish = englishAlphabet.includes(char);
+
+                if (isRussian || isEnglish) {
+                    const alphabet = isRussian ? russianAlphabet : englishAlphabet;
+                    const keyChar = key[keyIndex % key.length];
+                    let shift = getCharIndex(keyChar.toUpperCase(), alphabet.toUpperCase());
+
+                    if (!mode) {
+                        shift = -shift;
+                    }
+
+                    const charIndex = getCharIndex(char, alphabet);
+                    const newIndex = (charIndex + shift + alphabet.length) % alphabet.length;
+                    resultText += alphabet[newIndex];
+
+                    keyIndex++;
+                } else {
+                    resultText += char;
+                }
+            }
+
+            return resultText;
+        }
+
+        // Функция для кода Морзе
+        function morseCode(text, mode) {
+            const morseMap = {
+                'A': ',-',    'B': '-,,,',  'C': '-,-,',  'D': '-,,',   'E': ',',  
+                'F': ',,-,',  'G': '--,',   'H': ',,,,',  'I': ',,',    'J': ',---',
+                'K': '-,-',   'L': ',-,,',  'M': '--',    'N': '-,',    'O': '---',
+                'P': ',--,',  'Q': '--,-',  'R': ',-,',   'S': ',,,',   'T': '-',  
+                'U': ',,-',   'V': ',,,-',  'W': ',--',   'X': '-,,-',  'Y': '-,--',
+                'Z': '--,,',
+                'a': ',_',    'b': '_,,,',  'c': '_,_,',  'd': '_,,',   'e': '.,',  
+                'f': ',,_,',  'g': '__,',   'h': '.,,,,',  'i': '.,,',    'j': ',___',
+                'k': '_,_',   'l': ',_,,',  'm': '__',    'n': '_,',    'o': '___',
+                'p': ',__,',  'q': '__,_',  'r': ',_,',   's': '.,,,',   't': '_',  
+                'u': ',,_',   'v': ',,,_',  'w': ',__',   'x': '_,,_',  'y': '_,__',
+                'z': '__,,',
+
+                'А': '.-',    'Б': '-...',  'В': '.--',   'Г': '--.',   'Д': '-..',
+                'Е': ',.',     'Ё': ',--.--',  'Ж': '...-',  'З': '--..',  'И': ',..', 
+                'Й': '.---',  'К': '-.-',   'Л': '.-..',  'М': '--',    'Н': '-.', 
+                'О': '---',   'П': '.--.',  'Р': '.-.',   'С': ',...',   'Т': '-',  
+                'У': '..-',   'Ф': '..-.',  'Х': ',....',  'Ц': ',-.-..', 'Ч': ',-.--.',
+                'Ш': '----', 'Щ': '--.-', 'Ъ': '--.--', 'Ы': '-.--',  'Ь': '-..-',
+                'Э': '..-..',  'Ю': '..--',  'Я': '.-.-',
+                'а': '.~',    'б': '~...',  'в': '.~~',   'г': '~~.',   'д': '~..',
+                'е': '.',     'ё': '....',  'ж': '...~',  'з': '~~..',  'и': '..', 
+                'й': '.~~~',  'к': '~.~',   'л': '.~..',  'м': '~~',    'н': '~.', 
+                'о': '~~~',   'п': '.~~.',  'р': '.~.',   'с': '...',   'т': '~',  
+                'у': '..~',   'ф': '..~.',  'х': '......',  'ц': '~.~..', 'ч': '~.~~.',
+                'ш': '~~~~', 'щ': '~~.~', 'ъ': '~~.~~', 'ы': '~.~~',  'ь': '~..~',
+                'э': '..~..',  'ю': '..~~',  'я': '.~.~',
+                '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+                '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+                '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.', '!': '-.-.--',
+                '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
+                ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-',
+                '"': '.-..-.', '$': '...-..-', '@': '.--.-.', ' ': '/'
+            };
+
+            const reverseMorseMap = Object.fromEntries(
+                Object.entries(morseMap).map(([key, value]) => [value, key])
+            );
+
+            if (mode) {
+                // Кодирование в морзе
+                return text.split('').map(char => {
+                    const morseChar = morseMap[char];
+                    if (morseChar) {
+                        return morseChar;
+                    } else if (char === ' ') {
+                        return '/';
+                    } else {
+                        return char;
+                    }
+                }).join(' ');
+            } else {
+                // Декодирование из морзе
+                return text.split(' ').map(morseChar => {
+                    if (morseChar === '/') {
+                        return ' ';
+                    }
+                    const char = reverseMorseMap[morseChar];
+                    if (char) {
+                        return char;
+                    } else {
+                        return morseChar;
+                    }
+                }).join('');
+            }
+        }
+
+        // Функция для генерации пароля
+        function generatePassword(length, languages, includeLetters, includeNumbers, includeSpecialChars) {
+            let upperCaseLetters = '';
+            let lowerCaseLetters = '';
+
+            if (languages.includes('english')) {
+                upperCaseLetters += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                lowerCaseLetters += 'abcdefghijklmnopqrstuvwxyz';
+            }
+            if (languages.includes('russian')) {
+                upperCaseLetters += 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+                lowerCaseLetters += 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+            }
+
+            const numbers = includeNumbers ? '0123456789' : '';
+            const specialCharacters = includeSpecialChars ? '!@#$%^&*()_+-=[]{}|;:,.<>?' : '';
+            
+            const allCharacters = (includeLetters ? (upperCaseLetters + lowerCaseLetters) : '') + numbers + specialCharacters;
+
+            if (length < 6) {
+                throw new Error('Длина пароля должна быть не менее 6 символов.');
+            }
+
+            if (allCharacters.length === 0) {
+                throw new Error('Не выбрано ни одного типа символов для пароля.');
+            }
+
+            let password = '';
+            
+            // Гарантируем, что в пароле будет хотя бы по одному символу из каждого выбранного типа
+            if (includeLetters && upperCaseLetters) {
+                password += upperCaseLetters[Math.floor(Math.random() * upperCaseLetters.length)];
+            }
+            if (includeLetters && lowerCaseLetters) {
+                password += lowerCaseLetters[Math.floor(Math.random() * lowerCaseLetters.length)];
+            }
+            if (includeNumbers && numbers) {
+                password += numbers[Math.floor(Math.random() * numbers.length)];
+            }
+            if (includeSpecialChars && specialCharacters) {
+                password += specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+            }
+
+            // Дополняем пароль до нужной длины
+            for (let i = password.length; i < length; i++) {
+                password += allCharacters[Math.floor(Math.random() * allCharacters.length)];
+            }
+
+            // Перемешиваем символы пароля
+            password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+            return password;
+        }
+
+        // Функция для проверки надежности пароля
+        function checkPasswordStrength(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-ZА-ЯЁ]/.test(password);
+            const hasLowerCase = /[a-zа-яё]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+            let strength = 0;
+
+            if (password.length >= minLength) strength++;
+            if (hasUpperCase) strength++;
+            if (hasLowerCase) strength++;
+            if (hasNumbers) strength++;
+            if (hasSpecialChars) strength++;
+
+            let message = '';
+            if (strength === 5) {
+                message = 'Пароль очень надежный!';
+            } else if (strength >= 3) {
+                message = 'Пароль средней надежности.';
+            } else {
+                message = 'Пароль слабый. Рекомендуется улучшить его.';
+            }
+
+            return `Оценка надежности: ${strength}/5\n${message}`;
+        }
+
+        // Функция для хэширования SHA-256
+        async function sha256Hash(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // Функции для Base64 кодирования/декодирования
+        function base64Encode(text) {
+            return btoa(unescape(encodeURIComponent(text)));
+        }
+
+        function base64Decode(text) {
+            try {
+                return decodeURIComponent(escape(atob(text)));
+            } catch (e) {
+                return "Ошибка декодирования: неверный формат Base64";
+            }
+        }
+
+        // Переменные для brute force атаки
+        let worker = null;
+        let startTime = null;
+        let timer = null;
+        let lastCount = 0;
+        let totalCombinations = 0;
+
+        // Наборы символов для brute force атаки
+        const charsets = {
+            'en': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+            'ru': 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789',
+            'en+ru': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZабвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789',
+            'all': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZабвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'
+        };
+
+        // Функция для расчета общего количества комбинаций
+        function calculateTotalCombinations(charset, maxLength) {
+            let total = 0;
+            for (let length = 1; length <= maxLength; length++) {
+                total += Math.pow(charset.length, length);
+            }
+            return total;
+        }
+
+        // Функция для обновления статистики brute force атаки
+        function updateStats(count) {
+            document.getElementById('attemptsCount').textContent = count.toLocaleString();
+            
+            const now = new Date();
+            const seconds = Math.floor((now - startTime) / 1000);
+            document.getElementById('timeElapsed').textContent = seconds;
+            
+            if (seconds > 0) {
+                const hashesPerSecond = Math.floor(count / seconds);
+                document.getElementById('speed').textContent = hashesPerSecond.toLocaleString();
+            }
+            
+            // Обновляем прогресс-бар
+            if (totalCombinations > 0) {
+                const progress = Math.min(100, (count / totalCombinations) * 100);
+                document.getElementById('progressBar').style.width = `${progress}%`;
+            }
+        }
+
+        // Функция для запуска brute force атаки
+        function startBruteForceAttack() {
+            const hash = document.getElementById('inputText').value.trim().toLowerCase();
+            const length = parseInt(document.getElementById('maxLength').value);
+            const charsetType = document.getElementById('charsetType').value;
+            const charset = charsets[charsetType] || charsets['en+ru'];
+            
+            if (!hash) {
+                alert('Пожалуйста, введите целевой хэш');
+                return;
+            }
+            
+            if (hash.length !== 64 || !/^[a-f0-9]{64}$/.test(hash)) {
+                alert('Некорректный формат SHA-256 хэша. Должно быть 64 шестнадцатеричных символа.');
+                return;
+            }
+            
+            if (length < 1 || length > 8) {
+                alert('Максимальная длина пароля должна быть от 1 до 8');
+                return;
+            }
+            
+            // Рассчитываем общее количество комбинаций
+            totalCombinations = calculateTotalCombinations(charset, length);
+            
+            // Скрываем предыдущие результаты
+            document.getElementById('bruteForceResult').style.display = 'none';
+            document.getElementById('bruteForceResult').textContent = '';
+            
+            // Показываем прогресс
+            document.getElementById('progress').style.display = 'block';
+            document.getElementById('currentAttempt').textContent = '';
+            document.getElementById('attemptsCount').textContent = '0';
+            document.getElementById('timeElapsed').textContent = '0';
+            document.getElementById('speed').textContent = '0';
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Блокируем кнопки
+            document.getElementById('processButton').disabled = true;
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            document.getElementById('stopBtn').disabled = false;
+            
+            // Запоминаем время начала
+            startTime = new Date();
+            lastCount = 0;
+            
+            // Создаем Web Worker для выполнения атаки в фоне
+            worker = new Worker(URL.createObjectURL(new Blob([`
+                const charsets = ${JSON.stringify(charsets)};
+                
+                async function sha256(message) {
+                    const buffer = new TextEncoder().encode(message);
+                    const hash = await crypto.subtle.digest('SHA-256', buffer);
+                    return Array.from(new Uint8Array(hash))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+                }
+                
+                async function generateCombinations(prefix, remainingLength, charset, targetHash, callback) {
+                    if (remainingLength === 0) {
+                        const hash = await sha256(prefix);
+                        if (hash === targetHash) {
+                            postMessage({ type: 'found', password: prefix });
+                            return true;
+                        }
+                        postMessage({ type: 'attempt', attempt: prefix });
+                        return false;
+                    }
+                    
+                    for (let i = 0; i < charset.length; i++) {
+                        const found = await generateCombinations(prefix + charset[i], remainingLength - 1, charset, targetHash, callback);
+                        if (found) return true;
+                    }
+                    return false;
+                }
+                
+                onmessage = async function(e) {
+                    const { targetHash, maxLength, charsetType } = e.data;
+                    const charset = charsets[charsetType] || charsets['en+ru'];
+                    
+                    for (let length = 1; length <= maxLength; length++) {
+                        const found = await generateCombinations('', length, charset, targetHash);
+                        if (found) break;
+                    }
+                    
+                    postMessage({ type: 'done' });
+                };
+            `], { type: 'application/javascript' })));
+            
+            // Обработчик сообщений от Worker
+            worker.onmessage = function(e) {
+                const data = e.data;
+                
+                if (data.type === 'attempt') {
+                    document.getElementById('currentAttempt').textContent = data.attempt;
+                    lastCount++;
+                    if (lastCount % 100 === 0) {
+                        updateStats(lastCount);
+                    }
+                } 
+                else if (data.type === 'found') {
+                    document.getElementById('resultText').innerText = `Найден пароль: ${data.password}`;
+                    document.getElementById('bruteForceResult').style.display = 'none';
+                    stopBruteForceAttack();
+                    
+                    addToHistory({
+                        type: 'hash',
+                        mode: 'Дешифрование',
+                        input: hash,
+                        result: `Найден пароль: ${data.password}`
+                    });
+                } 
+                else if (data.type === 'done') {
+                    if (document.getElementById('bruteForceResult').style.display !== 'block') {
+                        document.getElementById('resultText').innerText = 'Пароль не найден в заданном диапазоне';
+                    }
+                    stopBruteForceAttack();
+                }
+            };
+            
+            // Таймер для обновления статистики
+            timer = setInterval(() => {
+                updateStats(lastCount);
+            }, 1000);
+            
+            // Запускаем Worker
+            worker.postMessage({
+                targetHash: hash,
+                maxLength: length,
+                charsetType: charsetType
+            });
+        }
+
+        // Функция для остановки brute force атаки
+        function stopBruteForceAttack() {
+            if (worker) {
+                worker.terminate();
+                worker = null;
+            }
+            
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            
+            document.getElementById('processButton').disabled = false;
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('progress').style.display = 'none';
+            
+            updateStats(lastCount);
+        }
+
+        // Обработчик кнопки
+        document.getElementById('processButton').addEventListener('click', async () => {
+            const cipherType = document.getElementById('cipherType').value;
+            const inputText = document.getElementById('inputText').value;
+            const key = document.getElementById('key')?.value;
+            const shift = parseInt(document.getElementById('shift')?.value || 3);
+            const mode = document.getElementById('mode').value === 'true';
+            let result;
+
+            try {
+                if (cipherType === 'caesar') {
+                    result = caesarCipher(inputText, shift, mode);
+                    
+                    addToHistory({
+                        type: 'caesar',
+                        mode: mode ? 'Шифрование' : 'Дешифрование',
+                        input: inputText,
+                        result: result,
+                        shift: shift
+                    });
+                } else if (cipherType === 'vigenere') {
+                    if (!key) {
+                        throw new Error('Введите ключ для шифра Виженера');
+                    }
+                    result = vigenereCipher(inputText, key, mode);
+                    
+                    addToHistory({
+                        type: 'vigenere',
+                        mode: mode ? 'Шифрование' : 'Дешифрование',
+                        input: inputText,
+                        result: result,
+                        key: key
+                    });
+                } else if (cipherType === 'morse') {
+                    result = morseCode(inputText, mode);
+                    
+                    addToHistory({
+                        type: 'morse',
+                        mode: mode ? 'Шифрование' : 'Дешифрование',
+                        input: inputText,
+                        result: result
+                    });
+                } else if (cipherType === 'hash') {
+                    if (mode) {
+                        result = await sha256Hash(inputText);
+                        
+                        addToHistory({
+                            type: 'hash',
+                            mode: 'Хэширование',
+                            input: inputText,
+                            result: result
+                        });
+                    } else {
+                        // Запускаем brute force атаку для дешифрования хэша
+                        document.getElementById('bruteforceOptions').style.display = 'block';
+                        startBruteForceAttack();
+                        return;
+                    }
+                } else if (cipherType === 'password') {
+                    if (mode) {
+                        const length = parseInt(document.getElementById('length').value);
+                        const languageOptions = document.getElementById('language');
+                        const selectedLanguages = Array.from(languageOptions.selectedOptions).map(option => option.value);
+                        const includeLetters = document.getElementById('includeLetters').checked;
+                        const includeNumbers = document.getElementById('includeNumbers').checked;
+                        const includeSpecialChars = document.getElementById('includeSpecialChars').checked;
+                        
+                        if (!includeLetters && !includeNumbers && !includeSpecialChars) {
+                            throw new Error('Выберите хотя бы один тип символов для пароля');
+                        }
+                        
+                        result = generatePassword(length, selectedLanguages, includeLetters, includeNumbers, includeSpecialChars);
+                        
+                        addToHistory({
+                            type: 'password',
+                            mode: 'Генерация',
+                            input: '',
+                            result: result,
+                            length: length
+                        });
+                    } else {
+                        if (!inputText) {
+                            throw new Error('Введите пароль для проверки');
+                        }
+                        result = checkPasswordStrength(inputText);
+                        
+                        addToHistory({
+                            type: 'password',
+                            mode: 'Проверка',
+                            input: inputText,
+                            result: result
+                        });
+                    }
+                } else if (cipherType === 'base64') {
+                    if (mode) {
+                        if (!inputText) {
+                            throw new Error('Введите текст для кодирования');
+                        }
+                        result = base64Encode(inputText);
+                    } else {
+                        if (!inputText) {
+                            throw new Error('Введите Base64 строку для декодирования');
+                        }
+                        result = base64Decode(inputText);
+                    }
+                    
+                    addToHistory({
+                        type: 'base64',
+                        mode: mode ? 'Кодирование' : 'Декодирование',
+                        input: inputText,
+                        result: result
+                    });
+                }
+
+                document.getElementById('resultText').innerText = result;
+                document.getElementById('copyButton').style.display = 'inline-block';
+            } catch (error) {
+                document.getElementById('resultText').innerText = `Ошибка: ${error.message}`;
+                document.getElementById('copyButton').style.display = 'none';
+            }
+        });
+
+        // Обработчик кнопки копирования
+        document.getElementById('copyButton').addEventListener('click', () => {
+            const resultText = document.getElementById('resultText').innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                const copyButton = document.getElementById('copyButton');
+                const originalText = copyButton.innerText;
+                copyButton.innerText = 'Скопировано!';
+                copyButton.style.backgroundColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    copyButton.innerText = originalText;
+                    copyButton.style.backgroundColor = '#2196F3';
+                }, 2000);
+            }).catch(err => {
+                console.error('Ошибка копирования:', err);
+            });
+        });
+
+        // Обработчик кнопки очистки
+        document.getElementById('clearButton').addEventListener('click', () => {
+            document.getElementById('inputText').value = '';
+            document.getElementById('resultText').innerText = '';
+            document.getElementById('copyButton').style.display = 'none';
+            document.getElementById('bruteForceResult').style.display = 'none';
+            document.getElementById('bruteForceResult').textContent = '';
+            document.getElementById('progress').style.display = 'none';
+            stopBruteForceAttack();
+        });
+
+        // Обработчик кнопки очистки истории
+        document.getElementById('clearHistory').addEventListener('click', () => {
+            operationHistory = [];
+            localStorage.removeItem('cryptoHistory');
+            updateHistoryDisplay();
+        });
+
+        // Обработчик кнопки остановки brute force атаки
+        document.getElementById('stopBtn').addEventListener('click', stopBruteForceAttack);
+
+        // Обработчик кнопки управления боковой панелью
+        document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+
+        // Обработчик переключения вкладок в боковой панели
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                // Убираем активный класс у всех кнопок и вкладок
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Добавляем активный класс текущей кнопке и вкладке
+                button.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Обработчик изменения выбранного шифра
+        document.getElementById('cipherType').addEventListener('change', function() {
+            const cipherType = this.value;
+
+            // Скрываем все контейнеры с опциями
+            document.getElementById('caesarOptions').style.display = 'none';
+            document.getElementById('vigenereOptions').style.display = 'none';
+            document.getElementById('passwordOptions').style.display = 'none';
+            document.getElementById('bruteforceOptions').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+
+            // Всегда показываем поле ввода текста
+            document.getElementById('inputTextContainer').style.display = 'block';
+
+            // Показываем нужный контейнер с опциями
+            if (cipherType === 'caesar') {
+                document.getElementById('caesarOptions').style.display = 'block';
+            } else if (cipherType === 'vigenere') {
+                document.getElementById('vigenereOptions').style.display = 'block';
+            } else if (cipherType === 'password') {
+                document.getElementById('passwordOptions').style.display = 'block';
+                // Скрываем поле ввода только при генерации пароля
+                const mode = document.getElementById('mode').value === 'true';
+                document.getElementById('inputTextContainer').style.display = mode ? 'none' : 'block';
+            }
+
+            // Обновление описания
+            const description = document.getElementById('description-content');
+            switch(cipherType) {
+                case 'caesar':
+                    description.innerHTML = `
+                        <strong>Шифр Цезаря</strong><br>
+                        <strong>Шифр Цезаря</strong> — это один из самых древних и простых методов шифрования, основанный на замене каждой буквы исходного текста на другую букву, находящуюся на фиксированное число позиций (сдвиг) дальше в алфавите.<br>
+<strong>Шифр работает по следующему алгоритму:</strong><br>
+Выбирается ключ (сдвиг) — целое число от 1 до длины алфавита (например, 3).<br>
+Каждая буква текста заменяется на букву, расположенную на N позиций дальше в алфавите.<br>
+Если алфавит заканчивается, счёт продолжается с начала (например, Я -> А при сдвиге +1 в русском алфавите).<br>
+<strong>Области применения:</strong><br>
+<strong>Историческое использование:</strong><br>
+
+Юлий Цезарь применял его для защиты военных сообщений.
+Использовался в Древнем Риме и средневековой Европе.<br>
+
+<strong>Обучение криптографии:</strong><br>
+Прост для понимания, поэтому используется в учебных целях.
+Помогает освоить базовые принципы шифрования и частотного анализа.<br>
+
+<strong>Современные аналоги:</strong><br>
+В более сложных шифрах (например, ROT13 — частный случай шифра Цезаря со сдвигом 13).
+В некоторых программах для простого скремблирования текста.<br>
+
+<strong>Игры и головоломки:</strong><br>
+Используется в квестах, шифрованных сообщениях и CTF-соревнованиях.<br>
+
+<strong>Недостатки:</strong><br>
+Слабая криптостойкость — легко взламывается частотным анализом или перебором.
+Ограниченная безопасность — подходит только для учебных и развлекательных целей.<br><br><br>
+                    `;
+                    break;
+                case 'vigenere':
+                    description.innerHTML = `
+                        <strong>Шифр Виженера</strong><br>
+                        <strong>Шифр Виженера</strong> — это метод полиалфавитного шифрования, в котором каждая буква исходного текста сдвигается на величину, определяемую ключевым словом.
+
+Назван в честь Блеза де Виженера, французского криптографа XVI века. Этот шифр считался «неразрушимым» на протяжении нескольких столетий.<br>
+                        <strong>Принцип работы:</strong><br>Шифр Виженера использует ключевое слово для определения величины сдвига каждой буквы:<br>
+
+Выбирается ключевое слово (например, КОД).<br>
+
+Ключ повторяется до длины исходного текста:<br>
+
+Текст: ПРИВЕТМИР<br>
+
+Ключ: КОДКОДКО<br>
+
+Каждая буква текста сдвигается на позицию соответствующей буквы ключа в алфавите:<br>
+
+П (17) + К (12) = Щ (29 -> 29 - 33 = Щ)<br>
+
+Р (18) + О (16) = Ь (34 -> 34 - 33 = Ь)<br>
+
+И (10) + Д (5) = Л (15)<br>
+<strong>Области применения:</strong><br>
+<strong>Историческая криптография:</strong><br>
+
+Использовался дипломатами и военными в XVI–XIX веках.
+
+Считался «шифром, который невозможно взломать» до XIX века.<br>
+
+<strong>Учебные цели:</strong><br>
+
+Позволяет изучить полиалфавитные системы шифрования.
+
+Основы для понимания более сложных алгоритмов (например, AES).<br>
+
+<strong>CTF-соревнования и головоломки:</strong><br>
+
+Часто встречается в криптографических задачах.<br>
+
+<strong>Старые системы защиты данных:</strong><br>
+
+Применялся в ручных шифровальных устройствах (например, диск Виженера).<br>
+<strong>Недостатки:</strong><br>
+Уязвим к частотному анализу при коротком ключе.
+
+Может быть взломан методом Казиски (анализ повторяющихся последовательностей).<br><br><br>
+                    `;
+                    break;
+                case 'morse':
+                    description.innerHTML = `
+                        <strong>Код Морзе</strong><br>
+                        <strong>Код Морзе</strong> — это метод кодирования букв, цифр и знаков препинания с помощью комбинаций коротких ("точки") и длинных ("тире") сигналов.
+
+Разработан в 1838 году Сэмюэлем Морзе и Альфредом Вейлем для телеграфной связи.<br>
+                        <strong>Принцип работы:</strong><br>
+Код использует три основных элемента:<br>
+
+<strong>Точка</strong> (·) — короткий сигнал (1 единица времени).<br>
+
+<strong>Тире</strong> (–) — длинный сигнал (3 единицы времени).<br>
+
+<strong>Паузы</strong>:<br>
+
+Между точками/тире внутри буквы — 1 единица.<br>
+
+Между буквами — 3 единицы.<br>
+
+Между словами — 7 единиц.<br>
+
+<strong>Области применения:</strong><br>
+<strong>Телеграфная связь:</strong> (XIX–XX века)<br>
+
+Основной способ передачи сообщений на расстоянии до появления радио.<br>
+
+<strong>Морская и авиационная навигация:</strong><br>
+
+Сигналы бедствия (SOS: ··· — — —  ···).
+
+Связь между кораблями и береговыми станциями.<br>
+
+<strong>Военная связь:</strong><br>
+
+Использовался в войнах (включая Вторую мировую) для передачи шифровок.<br>
+
+<strong>Радиолюбительская связь:</strong><br>
+
+До сих пор применяется в любительском радио (особенно в экстренных ситуациях).<br>
+
+Доступность для людей с ограниченными возможностями<br>
+
+Общение с помощью вспышек света/стуков (например, пленники в заложниках).<br>
+
+Обучение и головоломки<br>
+
+Изучение в школах и университетах как основы телекоммуникаций.<br>
+<strong>Недостатки:</strong><br>
+Низкая скорость передачи по сравнению с современными методами.
+
+Требует обучения — сложен для быстрого освоения.
+
+Подвержен ошибкам при плохой слышимости/видимости сигналов.<br><br><br>
+`;
+                    break;
+                case 'hash':
+                    description.innerHTML = `
+                        <strong>SHA-256</strong><br>
+                        <strong>SHA-256 (Secure Hash Algorithm 256-bit)</strong> - это криптографическая хеш-функция, разработанная Агентством национальной безопасности США (NSA) и опубликованная NIST в 2001 году. Она преобразует входные данные произвольной длины в уникальную 256-битную (32-байтную) хеш-сумму, представленную как 64-символьная шестнадцатеричная строка.<br>
+
+<strong>Ключевые свойства:</strong><br>
+
+Детерминированность: одинаковые входные данные всегда дают одинаковый хеш.
+
+Быстрое вычисление.
+
+Необратимость (практически невозможно восстановить исходные данные из хеша).
+
+Устойчивость к коллизиям (крайне мала вероятность совпадения хешей для разных данных).
+
+Лавинный эффект: малейшее изменение входа полностью меняет хеш.<br>
+
+<strong>Алгоритм вычисления SHA-256:</strong><br>
+
+<strong>Предварительная обработка:</strong><br>
+
+Добавление бита "1" в конец данных.
+
+Добавление нулей до длины, кратной 512 битам минус 64 бита.
+
+Добавление 64-битного представления исходной длины данных.
+
+Разбиение на блоки по 512 бит.<br>
+
+<strong>Инициализация хеш-значений:</strong><br>
+
+Используется 8 начальных 32-битных констант (первые 32 бита дробных частей квадратных корней первых 8 простых чисел).<br>
+
+<strong>Обработка каждого блока:</strong><br>
+
+Создание 64-элементного массива сообщений.
+
+64 раунда сжатия с использованием битовых операций (AND, OR, XOR, NOT) и циклических сдвигов.
+
+Обновление хеш-значений после каждого раунда.<br>
+
+<strong>Формирование итогового хеша:</strong><br>
+
+Конкатенация всех промежуточных хеш-значений.
+
+Преобразование в 64-символьную шестнадцатеричную строку.<br>
+
+<strong>Области применения:</strong><br>
+<strong>Криптовалюты и блокчейн:</strong><br>
+
+Основа Bitcoin и многих других криптовалют.
+
+Создание цифровых подписей.
+
+Майнинг (proof-of-work).<br>
+
+<strong>Защита паролей:</strong><br>
+
+Хранение хешей вместо самих паролей.
+
+Часто используется с "солью" для усиления защиты.<br>
+
+<strong>Целостность данных:</strong><br>
+
+Проверка неизменности файлов (например, при загрузке ПО).
+
+Контрольные суммы для важных документов.<br>
+
+<strong>Цифровые сертификаты и SSL/TLS:</strong><br>
+
+Часть инфраструктуры PKI.
+
+Используется в алгоритмах подписи сертификатов.<br>
+
+<strong>Аутентификация:</strong><br>
+
+HMAC-SHA256 для проверки подлинности сообщений.
+
+Генерация ключей.<br>
+
+<strong>Недостатки и уязвимости:</strong><br>
+<strong>Уязвимость к атакам перебора:</strong><br>
+
+Для паролей требуется дополнительная "соль".
+
+Рекомендуется использовать специализированные алгоритмы (bcrypt, Argon2).<br>
+
+<strong>Квантовая угроза:</strong><br>
+
+Теоретически уязвим к атакам квантовыми компьютерами (алгоритм Гровера).<br>
+
+<strong>Фиксированная длина:</strong><br>
+
+Для некоторых приложений 256 бит может стать недостаточным в будущем.<br><br><br>
+                    `;
+                    break;
+                case 'password':
+                    description.innerHTML = `
+<strong>Пароль</strong><br>
+                        <strong>Пароль</strong> — это секретная комбинация символов, используемая для аутентификации пользователя и контроля доступа к цифровым системам, данным или устройствам.<br>
+
+<strong>Основные функции:</strong><br>
+
+Подтверждение личности пользователя.
+
+Защита от несанкционированного доступа.
+
+Обеспечение конфиденциальности информации.<br>
+
+<strong>Виды паролей:</strong><br>
+<strong>По составу символов:</strong><br>
+
+Буквенные (только алфавитные символы).
+
+Цифровые (только числовые комбинации).
+
+Алфавитно-цифровые (комбинация букв и цифр).
+
+Комплексные (включают спецсимволы, буквы разного регистра и цифры).<br>
+
+<strong>По способу создания:</strong><br>
+
+Пользовательские (придуманные человеком).
+
+Системно-генерируемые (создаются алгоритмами).
+
+Биометрические (на основе уникальных физических характеристик).<br>
+
+<strong>По сроку действия:</strong><br>
+
+Постоянные.
+
+Временные (с ограниченным сроком действия).
+
+Одноразовые.<br>
+
+<strong>По уровню доступа:</strong><br>
+
+Пользовательские.
+
+Администраторские.
+
+Привилегированные.<br>
+
+<strong> Критерии надежности пароля:</strong><br>
+<strong>Длина:</strong><br>
+
+Минимальная рекомендуемая длина: 12 символов<br>
+
+Для повышенной безопасности: 16+ символов<br>
+
+<strong>Сложность:</strong><br>
+
+Обязательное использование:<br>
+
+Букв верхнего и нижнего регистра.
+
+Цифр.
+
+Специальных символов.<br>
+
+<strong>Уникальность:</strong><br>
+
+Запрет на повторное использование.
+
+Исключение словарных слов и общеизвестных комбинаций.<br>
+
+<strong>Динамичность:</strong><br>
+
+Регулярная смена (рекомендуется каждые 60-90 дней).
+
+Отсутствие очевидных последовательностей.<br>
+
+<strong>Безопасность хранения:</strong><br>
+
+Запрет на запись в открытом виде.
+
+Использование менеджеров паролей.
+
+Отказ от передачи третьим лицам.<br>
+
+ <strong>Рекомендации по созданию надежных паролей:</strong><br>
+Используйте мнемонические техники для запоминания сложных комбинаций<br>
+
+Применяйте генераторы паролей для создания криптостойких вариантов<br>
+
+Избегайте использования личной информации<br>
+
+Для разных сервисов создавайте уникальные пароли<br>
+
+ <strong>Дополнительные меры защиты:</strong><br>
+Включение двухфакторной аутентификации<br>
+
+Регулярный мониторинг на предмет компрометации<br>
+
+Использование аппаратных ключей безопасности<br>
+
+Ограничение количества попыток ввода<br><br><br>
+                    `;
+                    break;
+                case 'base64':
+                    description.innerHTML = `
+                        <strong>Base64</strong><br>
+                        <strong>Base64</strong> — это метод кодирования двоичных данных в текстовый формат с использованием набора из 64 символов (A-Z, a-z, 0-9, "+", "/" и "=" для дополнения).
+
+Разработан для безопасной передачи бинарных данных через текстовые протоколы (например, электронная почта).<br>
+
+<strong>Алгоритм кодирования:</strong><br>
+
+Разбить данные на группы по 3 байта (24 бита).
+
+Разделить каждую группу на 4 части по 6 бит.
+
+Каждые 6 бит преобразовать в символ из таблицы Base64.
+
+Если данных не хватает, добавить символ "=" для дополнения.
+
+<strong>Пример кодирования слова "Hi":</strong><br>
+
+<strong>Исходные данные(ASCII)</strong>	H (72)	i (105)<br>
+<strong>Бинарный вид</strong>	01001000 01101001<br>
+<strong>Разбивка на 6 бит</strong>	010010	000110	100100	(дополняется "=")<br>
+<strong>Кодировка Base64</strong>	S	G	k	=<br>
+<strong>Результат:</strong>	"SGk="<br>
+
+<strong>Области применения:</strong><br>
+<strong>Передача бинарных данных через текстовые протоколы:</strong><br>
+
+Вставка изображений в HTML/CSS (Data-URL).
+
+Отправка вложений в электронной почте (MIME).<br>
+
+<strong>Веб-разработка:</strong><br>
+
+Хранение небольших файлов (например, иконок) прямо в коде.
+
+Передача данных через API (например, JSON с Base64).<br>
+
+<strong>Системы аутентификации:</strong><br>
+
+Кодировка логинов/паролей в Basic Auth (HTTP-заголовки).<br>
+
+<strong>Криптография:</strong><br>
+
+Представление хешей, цифровых подписей в текстовом виде.<br>
+
+<strong>Базы данных:</strong><br>
+
+Сохранение бинарных данных (например, PDF) в текстовых полях.<br>
+<strong>Недостатки:</strong><br>
+Увеличение размера данных (на ~33% по сравнению с бинарным форматом).
+
+Низкая эффективность для больших файлов (лучше использовать бинарную передачу).<br><br><br>
+                    `;
+                    break;
+              }
+        });
+
+        // Обработчик изменения режима
+        document.getElementById('mode').addEventListener('change', () => {
+            const cipherType = document.getElementById('cipherType').value;
+            
+            // Управляем видимостью поля ввода для генерации пароля
+            if (cipherType === 'password') {
+                const mode = document.getElementById('mode').value === 'true';
+                document.getElementById('inputTextContainer').style.display = mode ? 'none' : 'block';
+            } else {
+                document.getElementById('inputTextContainer').style.display = 'block';
+            }
+            
+            // Обновляем текст кнопки в зависимости от выбранного режима
+            const modeSelect = document.getElementById('mode');
+            const processButton = document.getElementById('processButton');
+            
+            if (cipherType === 'hash') {
+                processButton.textContent = modeSelect.value === 'true' ? 'Хэшировать' : 'Подобрать пароль';
+            } else if (cipherType === 'password') {
+                processButton.textContent = modeSelect.value === 'true' ? 'Сгенерировать пароль' : 'Проверить пароль';
+            } else if (cipherType === 'base64') {
+                processButton.textContent = modeSelect.value === 'true' ? 'Кодировать в Base64' : 'Декодировать из Base64';
+            } else {
+                processButton.textContent = modeSelect.value === 'true' ? 'Шифровать' : 'Дешифровать';
+            }
+        });
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            // Вызываем обработчики для установки начального состояния
+            document.getElementById('cipherType').dispatchEvent(new Event('change'));
+            document.getElementById('mode').dispatchEvent(new Event('change'));
+            
+            // Устанавливаем множественный выбор для языков пароля
+            document.getElementById('language').selectedOptions[0].selected = true;
+            document.getElementById('language').selectedOptions[1].selected = true;
+            
+            // Показываем кнопку управления боковой панелью
+            document.getElementById('sidebarToggle').style.display = 'block';
+            
+            // Загружаем историю
+            updateHistoryDisplay();
+        });
+    </script>
+</body>
+</html>
